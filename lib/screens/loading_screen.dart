@@ -1,7 +1,11 @@
+import 'package:climatised/screens/location_screen.dart';
+import 'package:climatised/services/networking.dart';
 import 'package:flutter/material.dart';
 import 'package:climatised/services/location.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import 'location_screen.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+const apiKey = 'b8349a5f8dc56af78d317bb83ba00c6a';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -9,39 +13,35 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-
-
-  void getLocation() async{
+  void getLocationData() async {
     Location location = Location();
     await location.getCurrentLocation();
-    print(location.latitude);
-    print(location.longtitude);
-  }
 
-  void getData() async {
-    Response response = await get('https://samples.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid=439d4b804bc8187953eb36d2a8c26a02');
-     print(response.body);
+    NetworkHelper networkHelper = NetworkHelper(
+        'https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longtitude}&appid=$apiKey&units=metric');
 
-     if (response.statusCode == 200) {
-       String data = response.body;
-       print(data);
+    var weatherData = await networkHelper.getData();
 
-       var lontitude = jsonDecode(data)['coord']['lon'];
-       print(lontitude);
-     } else {
-       print(response.statusCode);
-     }
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return LocationScreen(
+        locationWeather: weatherData,
+      );
+    }));
   }
 
   @override
   void initState() {
-    getLocation();
+    getLocationData();
     super.initState();
-    getData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+        body: Center(
+            child: SpinKitRipple(
+      color: Colors.white,
+      size: 100.0,
+    )));
   }
 }
